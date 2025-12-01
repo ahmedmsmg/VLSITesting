@@ -1,38 +1,59 @@
-# VLSI Testing Toolkit
+# ATPG for Single Stuck-At Faults
 
-This repository implements a small interactive Automatic Test Pattern Generation (ATPG) tool for single stuck-at faults. The tool reads gate-level netlists, performs a basic fault-collapsing pass, simulates faults, and can exhaustively search for test vectors that detect faults using three menu options styled after D-Algorithm, PODEM, and SAT-based flows.
+This repository provides a graduate-level Automatic Test Pattern Generation (ATPG) tool implementing three algorithms for single stuck-at faults:
 
-## Running the tool
+- **D-Algorithm**
+- **PODEM**
+- **SAT-based ATPG** (CNF + internal DPLL solver)
 
-The entry point is `atpg.py`. Start the interactive menu with:
+The tool operates on ISCAS-style `.ckt` netlists that describe combinational logic using familiar gate primitives.
+
+## Usage
+
+Generate tests from the command line:
 
 ```bash
-python atpg.py
+python atpg.py <path/to/netlist.ckt> --algo D      # run D-Algorithm
+python atpg.py <path/to/netlist.ckt> --algo PODEM  # run PODEM
+python atpg.py <path/to/netlist.ckt> --algo SAT    # run SAT-based ATPG
+python atpg.py <path/to/netlist.ckt> --algo ALL    # run all algorithms
 ```
 
-You can pre-load a netlist using the optional flag:
+Output is reported per fault in the following style:
 
-```bash
-python atpg.py --netlist examples/c17.net
+```
+Fault a-sa0:    test = 1011
+Fault b-sa1:    no test found
 ```
 
-The menu provides the following actions:
-
-- **[0] Read the input net-list** – load a netlist file.
-- **[1] Perform fault collapsing** – create fault classes for every line (stuck-at-0 and stuck-at-1).
-- **[2] List fault classes** – print the generated fault classes.
-- **[3] Simulate** – evaluate a test vector with optional faults to see if they are detected.
-- **[4]/[5]/[6] Generate tests** – exhaustively enumerate primary input vectors to find detecting tests; results are grouped by fault and a list of undetectable faults is shown.
-- **[7] Exit** – quit the program.
+All primary inputs are listed in the order given by the netlist. Each fault is attempted for both stuck-at-0 and stuck-at-1 values across every signal.
 
 ## Netlist format
 
-The parser expects a simple gate-level format where each line either lists a single signal name (used to declare primary inputs/outputs) or defines a gate using the syntax:
+The parser accepts ISCAS-style gate descriptions:
 
 ```
-<output> <gate_type> <input1> <input2> [...]
+INPUT(a)
+INPUT(b)
+OUTPUT(f)
+f = AND(a, b)
+g = OR(a, b)
 ```
 
-Comments can be added after a `$` character. Supported gate types include `and`, `nand`, `or`, `nor`, `xor`, `xnor`, `not`/`inv`, and `buf`.
+Supported gate types: `AND`, `OR`, `NAND`, `NOR`, `XOR`, `XNOR`, `INV`/`NOT`, and `BUF`.
 
-An example netlist is available at `examples/c17.net`.
+Comments may follow a `$` character and are ignored.
+
+A ready-to-run benchmark is included at `examples/c17.ckt`.
+
+## Project structure
+
+- `atpg.py` – CLI driver
+- `ckt_parser.py` – parses `.ckt` files
+- `circuit.py` – circuit representation and five-valued simulation
+- `logic5.py` – five-valued algebra (`0`, `1`, `X`, `D`, `D'`)
+- `fault.py` – fault data structure
+- `d_algorithm.py` – D-Algorithm ATPG
+- `podem.py` – PODEM ATPG
+- `sat_atpg.py` – SAT-based ATPG with CNF builder and DPLL solver
+- `examples/` – sample circuits
