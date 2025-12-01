@@ -111,6 +111,8 @@ def interactive_menu(initial_path: Optional[str] = None) -> None:
                 circuit = parse_file(path)
                 fault_classes.clear()
                 print(f"Loaded circuit with {len(circuit.nodes)} nodes, {len(circuit.primary_inputs)} PIs, {len(circuit.primary_outputs)} POs.")
+            except FileNotFoundError:
+                print(f"File not found: {path}")
             except ParseError as exc:
                 print(f"Parse error: {exc}")
         elif choice == "1":
@@ -197,6 +199,8 @@ def main() -> None:
             raise SystemExit("Batch mode requires a .ckt file path")
         try:
             circuit = parse_file(args.ckt)
+        except FileNotFoundError:
+            raise SystemExit(f"File not found: {args.ckt}")
         except ParseError as exc:
             raise SystemExit(f"Parse error: {exc}")
         algos = [args.algo] if args.algo != "ALL" else list(ALGORITHMS.keys())
