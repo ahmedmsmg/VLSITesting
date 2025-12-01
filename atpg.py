@@ -9,7 +9,7 @@ from circuit import Circuit
 from fault import Fault, collapse_faults
 from d_algorithm import d_algorithm
 from podem import podem
-from sat_atpg import sat_atpg
+from sat_atpg import sat_atpg, HAS_PYSAT
 
 
 ALGORITHMS = {
@@ -69,10 +69,18 @@ def simulate_vector(circuit: Circuit, vector: Dict[str, str], faults: List[Fault
 def generate_tests(circuit: Circuit, algos: List[str], fault_classes: List[List[Fault]]) -> None:
     targets = [cls[0] for cls in fault_classes] if fault_classes else circuit.fault_list()
     for algo in algos:
+        if algo == "SAT" and not HAS_PYSAT:
+            print("\nAlgorithm SAT results:")
+            print("SAT-based ATPG is unavailable because 'python-sat' is not installed.")
+            continue
         print(f"\nAlgorithm {algo} results:")
         detected = 0
         for fault in targets:
-            vec = run_for_fault(circuit, fault, algo)
+            try:
+                vec = run_for_fault(circuit, fault, algo)
+            except RuntimeError as exc:
+                print(f"Fault {fault.label()}: error - {exc}")
+                vec = None
             if vec is None:
                 print(f"Fault {fault.label()}: no test found")
             else:

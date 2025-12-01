@@ -1,9 +1,18 @@
-"""SAT-based ATPG using PySAT."""
+"""SAT-based ATPG using PySAT.
+
+The solver dependency is optional at import time so the rest of the tool can
+still run in environments where ``python-sat`` is not installed. Attempting to
+invoke the SAT algorithm without the dependency will raise a clear, actionable
+error.
+"""
 from __future__ import annotations
 from typing import Dict, Tuple, List, Optional
+import importlib.util
 
-from pysat.formula import CNF
-from pysat.solvers import Solver
+HAS_PYSAT = importlib.util.find_spec("pysat") is not None
+if HAS_PYSAT:
+    from pysat.formula import CNF
+    from pysat.solvers import Solver
 
 from circuit import Circuit, Gate
 from fault import Fault
@@ -24,6 +33,11 @@ class VarMap:
 
 class SatATPG:
     def __init__(self, circuit: Circuit) -> None:
+        if not HAS_PYSAT:
+            raise RuntimeError(
+                "SAT-based ATPG requires the 'python-sat' package. Install it via "
+                "`pip install python-sat[pblib,aiger]` or select another algorithm."
+            )
         self.circuit = circuit
         self.circuit.build_topological()
 

@@ -98,19 +98,26 @@ class Circuit:
             if fault and g.output == fault.node:
                 sa = L.L0 if fault.stuck_at == 0 else L.L1
                 good = out
-                # Drive discrepancy if possible
-                if good == sa:
-                    values[g.output] = sa
-                else:
-                    values[g.output] = L.LD if sa == L.L0 else L.LD_BAR
+                # Only inject the fault when the good value is resolved. If the
+                # good value is still X, keep it unknown so activation has to be
+                # satisfied by the search.
+                if good in {L.L0, L.L1}:
+                    if good == sa:
+                        # fault not activated
+                        values[g.output] = sa
+                    else:
+                        # activated -> drive D/D'
+                        values[g.output] = L.LD if sa == L.L0 else L.LD_BAR
         # propagate any PI fault (if fault site is PI)
         if fault and fault.node in self.primary_inputs:
             desired = L.L1 if fault.stuck_at == 0 else L.L0
             injected = L.LD if fault.stuck_at == 0 else L.LD_BAR
-            if values[fault.node] == desired:
-                values[fault.node] = injected
-            else:
-                values[fault.node] = L.L0 if fault.stuck_at == 0 else L.L1
+            current = values[fault.node]
+            if current in {L.L0, L.L1}:
+                if current == desired:
+                    values[fault.node] = injected
+                else:
+                    values[fault.node] = L.L0 if fault.stuck_at == 0 else L.L1
         return values
 
     def evaluate_vector(self, vector: Dict[str, str], fault: Optional[Fault] = None) -> Dict[str, str]:
