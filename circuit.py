@@ -90,6 +90,18 @@ class Circuit:
         """
         values = {n: L.LX for n in self.nodes}
         values.update(assignment)
+
+        # Inject PI fault before gate evaluation so D/D' can propagate
+        if fault and fault.node in self.primary_inputs:
+            sa_val = L.L0 if fault.stuck_at == 0 else L.L1
+            injected = L.LD if fault.stuck_at == 0 else L.LD_BAR
+            current = values.get(fault.node, L.LX)
+            if current in {L.L0, L.L1}:
+                if current != sa_val:
+                    values[fault.node] = injected
+                else:
+                    values[fault.node] = sa_val
+
         for g in self.topo:
             # compute gate output
             out = self._eval_gate(g, values)
@@ -108,16 +120,6 @@ class Circuit:
                     else:
                         # activated -> drive D/D'
                         values[g.output] = L.LD if sa == L.L0 else L.LD_BAR
-        # propagate any PI fault (if fault site is PI)
-        if fault and fault.node in self.primary_inputs:
-            desired = L.L1 if fault.stuck_at == 0 else L.L0
-            injected = L.LD if fault.stuck_at == 0 else L.LD_BAR
-            current = values[fault.node]
-            if current in {L.L0, L.L1}:
-                if current == desired:
-                    values[fault.node] = injected
-                else:
-                    values[fault.node] = L.L0 if fault.stuck_at == 0 else L.L1
         return values
 
     def evaluate_vector(self, vector: Dict[str, str], fault: Optional[Fault] = None) -> Dict[str, str]:

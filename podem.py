@@ -104,7 +104,7 @@ def podem(circ: Circuit, fault: Fault) -> Optional[Dict[str, str]]:
     def rec(assignments: Dict[str, str]) -> Optional[Dict[str, str]]:
         values = imply(circ, assignments, fault)
         if any(values[po] in {L.LD, L.LD_BAR} for po in circ.primary_outputs):
-            return {pi: values.get(pi, L.LX) for pi in circ.primary_inputs}
+            return {pi: assignments.get(pi, L.LX) for pi in circ.primary_inputs}
         obj = objective(circ, values, fault)
         if obj is None:
             return None

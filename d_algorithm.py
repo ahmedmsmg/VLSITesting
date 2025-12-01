@@ -81,7 +81,7 @@ def d_algorithm(circ: Circuit, fault: Fault) -> Optional[Dict[str, str]]:
     def search() -> Optional[Dict[str, str]]:
         values = state.evaluate()
         if any(values[po] in {L.LD, L.LD_BAR} for po in circ.primary_outputs):
-            return {pi: values.get(pi, L.LX) for pi in circ.primary_inputs}
+            return {pi: state.assignments.get(pi, L.LX) for pi in circ.primary_inputs}
         obj = state.select_objective(values)
         if obj is None:
             return None
