@@ -1,59 +1,53 @@
-# ATPG for Single Stuck-At Faults
+# VLSI Testing ATPG Toolkit
 
-This repository provides a graduate-level Automatic Test Pattern Generation (ATPG) tool implementing three algorithms for single stuck-at faults:
+This repository implements a graduate-level Automatic Test Pattern Generation (ATPG) tool for single stuck-at faults. The tool offers three classic algorithms—D-Algorithm, PODEM, and SAT-based ATPG—built atop a five-valued logic simulator.
 
-- **D-Algorithm**
-- **PODEM**
-- **SAT-based ATPG** (CNF + internal DPLL solver)
-
-The tool operates on ISCAS-style `.ckt` netlists that describe combinational logic using familiar gate primitives.
+## Features
+- Five-valued logic engine (0, 1, X, D, D').
+- ISCAS-style `.ckt` parser supporting AND, OR, NAND, NOR, XOR, XNOR, INV/NOT, and BUF.
+- Circuit data structure with topological ordering and fault injection.
+- D-Algorithm and PODEM search (no exhaustive enumeration).
+- SAT-based ATPG using PySAT with good/faulty duplication and output-difference constraints.
 
 ## Usage
-
-Generate tests from the command line:
+Run ATPG on a netlist:
 
 ```bash
-python atpg.py <path/to/netlist.ckt> --algo D      # run D-Algorithm
-python atpg.py <path/to/netlist.ckt> --algo PODEM  # run PODEM
-python atpg.py <path/to/netlist.ckt> --algo SAT    # run SAT-based ATPG
-python atpg.py <path/to/netlist.ckt> --algo ALL    # run all algorithms
+python atpg.py examples/c17.ckt --algo D      # D-Algorithm
+python atpg.py examples/c17.ckt --algo PODEM  # PODEM
+python atpg.py examples/c17.ckt --algo SAT    # SAT-based
+python atpg.py examples/c17.ckt --algo ALL    # run all
 ```
 
-Output is reported per fault in the following style:
+Interactive menu (default when no `--algo` is provided):
 
 ```
-Fault a-sa0:    test = 1011
-Fault b-sa1:    no test found
+python atpg.py
+# then choose:
+# [0] load .ckt   [1] collapse   [2] list classes
+# [3] simulate     [4] D-Alg     [5] PODEM
+# [6] SAT ATPG     [7] exit
 ```
 
-All primary inputs are listed in the order given by the netlist. Each fault is attempted for both stuck-at-0 and stuck-at-1 values across every signal.
-
-## Netlist format
-
-The parser accepts ISCAS-style gate descriptions:
-
+Output format:
 ```
-INPUT(a)
-INPUT(b)
-OUTPUT(f)
-f = AND(a, b)
-g = OR(a, b)
+Algorithm PODEM results:
+Fault 1gat-sa0: test = 1X011
+Fault 1gat-sa1: no test found
+...
+Detected 9/12 faults
 ```
 
-Supported gate types: `AND`, `OR`, `NAND`, `NOR`, `XOR`, `XNOR`, `INV`/`NOT`, and `BUF`.
+## File Overview
+- `logic5.py` – five-valued logic primitives.
+- `ckt_parser.py` – ISCAS `.ckt` parser.
+- `circuit.py` – circuit data structure and simulation.
+- `d_algorithm.py` – D-Algorithm ATPG.
+- `podem.py` – PODEM ATPG.
+- `sat_atpg.py` – SAT-based ATPG with PySAT.
+- `fault.py` – stuck-at fault definition.
+- `examples/c17.ckt` – sample benchmark.
 
-Comments may follow a `$` character and are ignored.
-
-A ready-to-run benchmark is included at `examples/c17.ckt`.
-
-## Project structure
-
-- `atpg.py` – CLI driver
-- `ckt_parser.py` – parses `.ckt` files
-- `circuit.py` – circuit representation and five-valued simulation
-- `logic5.py` – five-valued algebra (`0`, `1`, `X`, `D`, `D'`)
-- `fault.py` – fault data structure
-- `d_algorithm.py` – D-Algorithm ATPG
-- `podem.py` – PODEM ATPG
-- `sat_atpg.py` – SAT-based ATPG with CNF builder and DPLL solver
-- `examples/` – sample circuits
+## Dependencies
+- Python 3.10+
+- `python-sat` (PySAT) for the SAT-based backend: `pip install python-sat[pblib,aiger]`
