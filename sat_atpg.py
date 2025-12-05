@@ -77,6 +77,10 @@ class SatATPG:
             for pi in self.circuit.primary_inputs:
                 self.var(pi, suffix)
             for gate in self.circuit.topo:
+                # In the faulty copy, skip the gate that drives the fault site so
+                # the stuck-at assignment solely defines that node.
+                if suffix == "f" and gate.output == fault.node:
+                    continue
                 self.encode_gate(constraints, gate, suffix)
 
         # fault injection and activation
@@ -91,6 +95,8 @@ class SatATPG:
 
         # tie PIs between good and faulty copies
         for pi in self.circuit.primary_inputs:
+            if pi == fault.node:
+                continue
             constraints.append(self.var(pi, "g") == self.var(pi, "f"))
 
         # primary output difference
