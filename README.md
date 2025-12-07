@@ -9,17 +9,16 @@ This repository implements a graduate-level Automatic Test Pattern Generation (A
 - D-Algorithm and PODEM search (no exhaustive enumeration).
 - SAT-based ATPG using PySAT with good/faulty duplication and output-difference constraints.
 
+## Dependencies
+## You must use a Virtual Environment in Order to be able to pip/download and compile z3-solver
+    - python -m venv .venv
+    - source .venv/bin/activate
+    - pip install z3-solver
+    - pip install python-sat
+    - Python 3.10+
+
 ## Usage
-Run ATPG on a netlist:
-
-```bash
-python atpg.py examples/c17.ckt --algo D      # D-Algorithm
-python atpg.py examples/c17.ckt --algo PODEM  # PODEM
-python atpg.py examples/c17.ckt --algo SAT    # SAT-based
-python atpg.py examples/c17.ckt --algo ALL    # run all
-```
-
-Interactive menu (default when no `--algo` is provided):
+Interactive menu:
 
 ```
 python atpg.py
@@ -44,10 +43,7 @@ Detected 9/12 faults
 - `circuit.py` – circuit data structure and simulation.
 - `d_algorithm.py` – D-Algorithm ATPG.
 - `podem.py` – PODEM ATPG.
-- `sat_atpg.py` – SAT-based ATPG with PySAT.
+- `sat_atpg.py` – SAT-based ATPG with z3-solver- I tried PySAT first but wasn't working.
 - `fault.py` – stuck-at fault definition.
-- `examples/c17.ckt` – sample benchmark.
 
-## Dependencies
-- Python 3.10+
-- `python-sat` (PySAT) for the SAT-based backend: `pip install python-sat[pblib,aiger]`
+
