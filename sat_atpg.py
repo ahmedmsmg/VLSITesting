@@ -32,7 +32,7 @@ class SatATPG:
         # map (net_name, suffix) -> Bool variable
         self.vars: Dict[Tuple[str, str], Bool] = {}
 
-    # ---------- variable helper ----------
+    #variable helper
 
     def var(self, net: str, suffix: str) -> Bool:
         """Return (and create if needed) a Bool for `net` in copy `suffix`."""
@@ -42,7 +42,7 @@ class SatATPG:
             self.vars[key] = Bool(f"{net}_{suffix}")
         return self.vars[key]
 
-    # ---------- gate encoding ----------
+    #gate encoding
 
     def encode_gate(self, constraints: List, gate: Gate, suffix: str) -> None:
         """Encode a single gate as a Boolean equality in the given copy."""
@@ -83,7 +83,7 @@ class SatATPG:
 
         raise ValueError(f"Unsupported gate type {typ} in SAT encoding")
 
-    # ---------- full SAT encoding ----------
+    #full SAT encoding
 
     def build_constraints(self, fault: Fault) -> List:
         """
@@ -146,7 +146,7 @@ class SatATPG:
 
         return constraints
 
-    # ---------- solving & extracting test cube ----------
+    #solving & extracting test cube
 
     def solve(self, fault: Fault) -> Optional[Dict[str, str]]:
         """Run Z3 and, if satisfiable, return a PI test cube (0/1/X)."""

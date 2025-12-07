@@ -76,5 +76,18 @@ def parse_ckt(text: str, name: str = "") -> Circuit:
 
 
 def parse_file(path: str) -> Circuit:
-    with open(path, "r", encoding="utf-8") as f:
-        return parse_ckt(f.read(), name=path)
+    # Try UTF-8 first
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+            return parse_ckt(text, name=path)
+    except UnicodeDecodeError:
+        pass
+
+    # Fallback: CP1252 (Windows encoding used by t5_10.ckt file)
+    try:
+        with open(path, "r", encoding="cp1252") as f:
+            text = f.read()
+            return parse_ckt(text, name=path)
+    except UnicodeDecodeError:
+        pass

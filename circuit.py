@@ -60,7 +60,7 @@ class Circuit:
                 raise ValueError("Circuit has cycles or unresolved dependencies")
         self.topo = order
 
-    # --- Simulation helpers -------------------------------------------------
+    #Simulation helpers
     def _eval_gate(self, g: Gate, values: Dict[str, str]) -> str:
         ins = [values.get(n, L.LX) for n in g.inputs]
         typ = g.type

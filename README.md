@@ -1,6 +1,7 @@
-# VLSI Testing ATPG Toolkit
+# Ahmed Ghoneim And Samir Ahmed
 
-This repository implements a graduate-level Automatic Test Pattern Generation (ATPG) tool for single stuck-at faults. The tool offers three classic algorithms—D-Algorithm, PODEM, and SAT-based ATPG—built atop a five-valued logic simulator.
+# VLSI Testing ATPG Toolkit
+This project implements a graduate-level Automatic Test Pattern Generation (ATPG) tool for single stuck-at faults. The tool offers three classic algorithms—D-Algorithm, PODEM, and SAT-based ATPG—built atop a five-valued logic simulator.
 
 ## Features
 - Five-valued logic engine (0, 1, X, D, D').
@@ -36,6 +37,25 @@ Fault 1gat-sa1: no test found
 ...
 Detected 9/12 faults
 ```
+
+## How to load a .ckt file
+Press 0 then type "examples/filename.ckt" or move your own tests into the root or example files and insert the location.
+
+## How to simulate faults on a circuit [3]
+Select an option: 3
+"Enter test vector for PIs ['1gat', '2gat', '3gat', '4gat', '5gat', '6gat']:"
+
+Here you would type a vector input, for example.. 101010
+
+"Enter faults (e.g., a-sa0,b-sa1) or leave blank:"
+
+Here you would type the faults simulated, for example.. 1gat-sa0,6gat-sa1
+
+Output:"
+Fault 1gat-sa0 not observable at outputs: {'16gat': '1'}
+Fault 6gat-sa1 not observable at outputs: {'16gat': '1'}
+"
+
 
 ## File Overview
 - `logic5.py` – five-valued logic primitives.
