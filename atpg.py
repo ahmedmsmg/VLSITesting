@@ -1,4 +1,3 @@
-"""Ahmed Ghoneim And Samir Ahmed"""
 """Interactive ATPG driver supporting menu-based workflow."""
 from __future__ import annotations
 import argparse
