@@ -1,4 +1,4 @@
-# Ahmed Ghoneim And Samir Ahmed
+# Ahmed Ghoneim
 
 # VLSI Testing ATPG Toolkit
 This project implements a graduate-level Automatic Test Pattern Generation (ATPG) tool for single stuck-at faults. The tool offers three classic algorithms—D-Algorithm, PODEM, and SAT-based ATPG—built atop a five-valued logic simulator.
