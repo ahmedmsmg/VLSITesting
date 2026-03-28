@@ -11,3 +11,4 @@ htmlcov/
 reports/
 *.pyc
 CLAUDE_LOG.md
+.gitignore
