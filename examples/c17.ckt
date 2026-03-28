@@ -1,0 +1,34 @@
+$ ISCAS'85 Benchmark Circuit c17
+$ -----------------------------------------------
+$ The smallest standard ISCAS'85 benchmark.
+$ Widely used in ATPG research and courses.
+$
+$ 5 primary inputs
+$ 2 primary outputs
+$ 6 NAND gates
+$
+$ Structure (gate naming matches original ISCAS'85 paper):
+$
+$   n10 = NAND(n1, n3)
+$   n11 = NAND(n3, n6)
+$   n16 = NAND(n2, n11)
+$   n19 = NAND(n11, n7)
+$   n22 = NAND(n10, n16)   <- primary output
+$   n23 = NAND(n16, n19)   <- primary output
+
+n1      $ ... primary input
+n2      $ ... primary input
+n3      $ ... primary input
+n6      $ ... primary input
+n7      $ ... primary input
+
+n22     $ ... primary output
+n23     $ ... primary output
+
+$       output  type    inputs
+        n10     nand    n1   n3
+        n11     nand    n3   n6
+        n16     nand    n2   n11
+        n19     nand    n11  n7
+        n22     nand    n10  n16
+        n23     nand    n16  n19

@@ -1,0 +1,29 @@
+$ 4-bit Even Parity Checker
+$ -----------------------------------------------
+$ Computes the even parity of 4 input bits using
+$ a tree of XOR gates.  Output P = 1 when an odd
+$ number of inputs are 1 (odd-parity detector),
+$ P = 0 when an even number are 1.
+$
+$ Commonly appears in error-detection logic and
+$ data bus interfaces in real CPU/GPU designs.
+$
+$ 4 primary inputs : A, B, C, D
+$ 1 primary output : P  (parity bit)
+$ 3 XOR gates (binary tree)
+$
+$   xab = XOR(A, B)
+$   xcd = XOR(C, D)
+$   P   = XOR(xab, xcd)
+
+A       $ ... primary input
+B       $ ... primary input
+C       $ ... primary input
+D       $ ... primary input
+
+P       $ ... primary output
+
+$       output  type    inputs
+        xab     xor     A    B
+        xcd     xor     C    D
+        P       xor     xab  xcd
