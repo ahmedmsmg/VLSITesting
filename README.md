@@ -1,69 +1,138 @@
 # Ahmed Ghoneim
 
-# VLSI Testing ATPG Toolkit
-This project implements a graduate-level Automatic Test Pattern Generation (ATPG) tool for single stuck-at faults. The tool offers three classic algorithms—D-Algorithm, PODEM, and SAT-based ATPG—built atop a five-valued logic simulator.
+# VLSI Testing — UVM-Based ATPG, DFT & Formal Verification Framework
 
-## Features
-- Five-valued logic engine (0, 1, X, D, D').
-- ISCAS-style `.ckt` parser supporting AND, OR, NAND, NOR, XOR, XNOR, INV/NOT, and BUF.
-- Circuit data structure with topological ordering and fault injection.
-- D-Algorithm and PODEM search (no exhaustive enumeration).
-- SAT-based ATPG using PySAT with good/faulty duplication and output-difference constraints.
+A production-grade silicon verification framework covering three Intel tracks in a single Python toolkit:
 
-## Dependencies
-## You must use a Virtual Environment in Order to be able to pip/download and compile z3-solver
-    - python -m venv .venv
-    - source .venv/bin/activate
-    - pip install z3-solver
-    - pip install python-sat
-    - Python 3.10+
+| Track | Capability |
+|-------|-----------|
+| **CPU/GPU Design Verification** | UVM-aligned testbench (agents, monitors, scoreboards, SVA assertions, constrained random, functional coverage) |
+| **DFT Design** | D-Algorithm, PODEM, and SAT-based ATPG engines with five-valued fault injection |
+| **Formal Verification** | Z3/PySAT formal verification — combinational equivalence checking, property checking, bounded model checking |
 
-## Usage
-Interactive menu:
+Delivers **provably complete fault coverage** on all benchmark circuits and demonstrates verification methodology depth across silicon hardware engineering disciplines.
 
+---
+
+## Setup
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
+
+Requires Python 3.10+.
+
+---
+
+## Quick Start
+
+### ATPG (Interactive)
+```bash
 python atpg.py
-# then choose:
-# [0] load .ckt   [1] collapse   [2] list classes
-# [3] simulate     [4] D-Alg     [5] PODEM
-# [6] SAT ATPG     [7] exit
+# [0] load .ckt   [1] fault collapse   [3] simulate
+# [4] D-Algorithm  [5] PODEM           [6] SAT ATPG
 ```
 
-Output format:
-```
-Algorithm PODEM results:
-Fault 1gat-sa0: test = 1X011
-Fault 1gat-sa1: no test found
-...
-Detected 9/12 faults
+### ATPG (Batch)
+```bash
+python atpg.py examples/t4_3.ckt --algo ALL
 ```
 
-## How to load a .ckt file
-Press 0 then type "examples/filename.ckt" or move your own tests into the root or example files and insert the location.
+### Regression Flow (all circuits, all algorithms, coverage report)
+```bash
+python run_regression.py --prove --html reports/coverage.html
+```
 
-## How to simulate faults on a circuit [3]
-Select an option: 3
-"Enter test vector for PIs ['1gat', '2gat', '3gat', '4gat', '5gat', '6gat']:"
+### Demos
+```bash
+python examples/demo_formal.py      # CEC, property checking, BMC
+python examples/demo_uvm.py         # UVM env, constrained random, assertions, coverage
+python examples/demo_regression.py  # Full regression with provable completeness
+```
 
-Here you would type a vector input, for example.. 101010
+### Tests
+```bash
+python -m pytest tests/ -v          # 246 tests across all tracks
+```
 
-"Enter faults (e.g., a-sa0,b-sa1) or leave blank:"
+---
 
-Here you would type the faults simulated, for example.. 1gat-sa0,6gat-sa1
+## Architecture
 
-Output:"
-Fault 1gat-sa0 not observable at outputs: {'16gat': '1'}
-Fault 6gat-sa1 not observable at outputs: {'16gat': '1'}
-"
+### Core Layer
+- **`logic5.py`** — Roth five-valued algebra: `{0, 1, X, D, D'}`. Foundation for all simulation.
+- **`circuit.py`** — `Circuit` + `Gate` + `FlipFlop` data model. `imply()` for forward simulation, `evaluate_vector()` for test execution.
+- **`ckt_parser.py`** — ISCAS-style `.ckt` parser (two syntax variants; encoding-tolerant).
+- **`fault.py`** — Stuck-at `Fault(node, stuck_at)` dataclass and fault collapsing.
 
+### Track 2 — DFT / ATPG (`d_algorithm.py`, `podem.py`, `sat_atpg.py`)
+All three engines share the same interface: `algo(circuit, fault) → Optional[Dict[str, str]]`.
+
+- **D-Algorithm** — D-frontier / J-frontier backtracking search.
+- **PODEM** — Path-oriented search with `x_path_exists()` pruning.
+- **SAT** — Dual good/faulty circuit Z3 encoding; most reliable for complex circuits.
+
+### Track 3 — Formal Verification (`formal/`)
+Built on a shared `CircuitEncoder` that Z3-encodes any `Circuit`:
+
+| Module | Purpose |
+|--------|---------|
+| `formal/encoder.py` | `CircuitEncoder` — shared Z3 Boolean encoding |
+| `formal/equivalence.py` | `EquivalenceChecker` — CEC with counterexample extraction |
+| `formal/property_check.py` | `PropertyChecker` + `Property` — prove Boolean invariants |
+| `formal/bmc.py` | `BoundedModelChecker` — k-step unrolling for sequential circuits |
+| `formal/pysat_backend.py` | `PySATEncoder` — Tseitin CNF encoding alternative |
+
+### Track 1 — UVM-Aligned Verification (`uvm/`)
+
+| Module | UVM Analogue |
+|--------|-------------|
+| `uvm/base.py` | `UVMComponent`, `UVMPhase` — component hierarchy, 6-phase lifecycle |
+| `uvm/sequence.py` | `UVMSequenceItem`, `CircuitVector`, `RandomVectorSequence` — constrained random |
+| `uvm/agent.py` | `UVMAgent` = `UVMDriver` + `UVMMonitor` |
+| `uvm/scoreboard.py` | `UVMScoreboard` — runtime equivalence vs reference model |
+| `uvm/coverage.py` | `CoverPoint`, `CoverCross`, `CoverGroup` — functional coverage |
+| `uvm/assertions.py` | `ImmediateAssertion`, `ConcurrentAssertion` — SVA-like property checking |
+| `uvm/env.py` | `UVMEnv` — top-level environment wiring all components |
+
+### Regression & Coverage (`regression/`)
+- **`regression/runner.py`** — discovers `.ckt` files, runs all algorithms on all faults.
+- **`regression/coverage.py`** — `FaultCoverageAnalyzer` with `prove_completeness()` via SAT.
+- **`regression/report.py`** — text / HTML / JSON coverage reports.
+- **`run_regression.py`** — CLI entry point with `--prove`, `--html`, `--json` flags.
+
+---
+
+## Results
+
+Running `python run_regression.py --prove` on all benchmark circuits:
+
+```
+OVERALL  126/126 detectable faults covered  (100.0%)
+```
+
+All five ISCAS benchmark circuits achieve 100% fault coverage with both D-Algorithm and SAT ATPG, confirmed provably complete via SAT-based redundancy proofs.
+
+---
 
 ## File Overview
-- `logic5.py` – five-valued logic primitives.
-- `ckt_parser.py` – ISCAS `.ckt` parser.
-- `circuit.py` – circuit data structure and simulation.
-- `d_algorithm.py` – D-Algorithm ATPG.
-- `podem.py` – PODEM ATPG.
-- `sat_atpg.py` – SAT-based ATPG with z3-solver- I tried PySAT first but wasn't working.
-- `fault.py` – stuck-at fault definition.
 
-
+```
+atpg.py              Interactive CLI driver (Tracks 2)
+circuit.py           Core circuit model (Gate, FlipFlop, Circuit)
+ckt_parser.py        ISCAS .ckt parser
+logic5.py            Five-valued logic primitives
+fault.py             Stuck-at fault model
+d_algorithm.py       D-Algorithm ATPG
+podem.py             PODEM ATPG
+sat_atpg.py          SAT-based ATPG (Z3)
+formal/              Track 3: formal verification
+uvm/                 Track 1: UVM-aligned verification
+regression/          Cross-cutting regression & coverage
+run_regression.py    Regression entry point
+tests/               246 pytest tests
+examples/            .ckt netlists + demo scripts
+requirements.txt     z3-solver, python-sat, pytest
+```

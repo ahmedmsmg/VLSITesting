@@ -14,6 +14,21 @@ class Gate:
     inputs: List[str]
 
 
+@dataclass
+class FlipFlop:
+    """D flip-flop for sequential circuit support.
+
+    Attributes:
+        output:  Name of the state output net (Q).
+        input:   Name of the data input net (D) — driven by the combinational cone.
+        initial: Initial value of the state: "0", "1", or "X" (unknown).
+    """
+
+    output: str
+    input: str
+    initial: str = "X"
+
+
 class Circuit:
     def __init__(self, name: str = "") -> None:
         self.name = name
@@ -22,6 +37,7 @@ class Circuit:
         self.gates: List[Gate] = []
         self.topo: List[Gate] = []
         self.nodes: List[str] = []
+        self.flip_flops: List[FlipFlop] = []
 
     def add_pi(self, name: str) -> None:
         if name not in self.primary_inputs:
